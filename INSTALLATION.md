@@ -61,3 +61,26 @@ sudo ln -s /usr/local/mysql/lib/libmysqlclient.18.dylib /usr/lib/libmysqlclient.
 ```
 
 However installing `portaudio` and/or `ffmpeg` from source is also doable. 
+
+
+
+## Detail installation instruction
+
+1) up vagrant box https://app.vagrantup.com/rafacas/boxes/fedora21-plain
+
+2) install pip : sudo easy_install pip
+
+3) https://github.com/worldveil/dejavu/blob/master/INSTALLATION.md
+pip install command execute with "—user"
+
+4) https://stackoverflow.com/questions/454854/no-module-named-mysqldb/5873259#5873259 sudo yum install MySQL-python
+
+5) https://www.liquidweb.com/kb/how-to-install-mysql-mariadb-on-fedora-21/
+
+6) create db https://github.com/worldveil/dejavu#setup
+
+7) install dnf https://www.rootusers.com/how-to-install-dnf-package-manager-in-centosrhel/
+
+8) install ffmpeg https://tecadmin.net/install-ffmpeg-on-fedora/
+
+9) run http://prntscr.com/map7li

@@ -202,6 +202,33 @@ class SQLDatabase(Database):
                 return count
             return 0
 
+    #def get_fingerprint_hashes(self, sid):
+    #    """
+    #    Returns fingerprints the database has fingerprinted.
+    #    """
+    #    with self.cursor() as cur:
+    #        cur.execute(self.SELECT_ALL_FINGERPRINTS, (sid,))
+    #        for sid, offset, hash in cur:
+    #            yield (sid, offset, hash)
+
+    def get_fingerprint_hashes(self):
+        """
+        Return songs that have the fingerprinted flag set TRUE (1).
+        """
+        with self.cursor(cursor_type=DictCursor) as cur:
+            cur.execute(self.SELECT_ALL_FINGERPRINTS)
+            for row in cur:
+                yield row
+
+    def get_num_repeats_hashes(self, sid):
+        """
+        Returns number of repeats hashes.
+        """
+        with self.cursor() as cur:
+            cur.execute(self.SELECT_COUNT_REPEATS_HASHES, (sid,))
+            for row in cur:
+                yield row
+
     def set_song_fingerprinted(self, sid):
         """
         Set the fingerprinted flag to TRUE (1) once a song has been completely

@@ -84,3 +84,4 @@ pip install command execute with "—user"
 8) install ffmpeg https://tecadmin.net/install-ffmpeg-on-fedora/
 
 9) run http://prntscr.com/map7li
+

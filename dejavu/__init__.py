@@ -5,6 +5,7 @@ import multiprocessing
 import os
 import traceback
 import sys
+#import pickle
 
 
 class Dejavu(object):
@@ -94,9 +95,12 @@ class Dejavu(object):
         pool.join()
 
     def fingerprint_file(self, filepath, song_name=None):
+        #print "fingerprint_file"
         songname = decoder.path_to_songname(filepath)
         song_hash = decoder.unique_hash(filepath)
         song_name = song_name or songname
+        #song_hash = "_"
+        print song_hash
         # don't refingerprint already fingerprinted files
         if song_hash in self.songhashes_set:
             print "%s already fingerprinted, continuing..." % song_name
@@ -106,11 +110,38 @@ class Dejavu(object):
                 self.limit,
                 song_name=song_name
             )
+            #print hashes
+
             sid = self.db.insert_song(song_name, file_hash)
 
             self.db.insert_hashes(sid, hashes)
             self.db.set_song_fingerprinted(sid)
             self.get_fingerprinted_songs()
+
+    def fingerprint_file__get_hashes(self, filepath, song_name=None):
+        # print "fingerprint_file"
+        songname = decoder.path_to_songname(filepath)
+        song_hash = decoder.unique_hash(filepath)
+        song_name = song_name or songname
+
+        print song_hash
+        song_name, hashes, file_hash = _fingerprint_worker(
+            filepath,
+            self.limit,
+            song_name=song_name
+        )
+
+        # print hashes
+
+        f = open("hash.txt", "w")
+        for hash, offset in hashes:
+            #hash_repeats[hash].append(offset)
+            f.write("hash: %s , offset: %s" % (hash, offset))
+            for hash_local, offset_local in hashes:
+                if hash == hash_local and offset != offset_local:
+                    print ("Finding overlap hash: %s between offset: %s and offset: %s" % (hash, offset, offset_local))
+
+
 
     def find_matches(self, samples, Fs=fingerprint.DEFAULT_FS):
         hashes = fingerprint.fingerprint(samples, Fs=Fs)
@@ -186,10 +217,17 @@ def _fingerprint_worker(filename, limit=None, song_name=None):
         print("Fingerprinting channel %d/%d for %s" % (channeln + 1,
                                                        channel_amount,
                                                        filename))
+        #print Fs
         hashes = fingerprint.fingerprint(channel, Fs=Fs)
+        #print hashes
         print("Finished channel %d/%d for %s" % (channeln + 1, channel_amount,
                                                  filename))
+
+        #print set(hashes)
         result |= set(hashes)
+
+        #print result
+
 
     return song_name, result, file_hash
 

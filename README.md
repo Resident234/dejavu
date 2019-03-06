@@ -1,3 +1,25 @@
+plan
+
+3) наполнение базы
+
+Actions instructions:
+
+mysql -u root -p
+
+SHOW TABLES;
+
+SELECT * FROM songs;
+
+SELECT * FROM fingerprints;
+
+mysqldump -u root -p dejavu > dejavu/dump.sql
+
+если не полячауется очистить таблицу , то можно сработать так
+SET FOREIGN_KEY_CHECKS = 0; 
+TRUNCATE table songs; 
+SET FOREIGN_KEY_CHECKS = 1;
+
+
 dejavu
 ==========
 

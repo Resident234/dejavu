@@ -118,29 +118,53 @@ class Dejavu(object):
             self.db.set_song_fingerprinted(sid)
             self.get_fingerprinted_songs()
 
-    def fingerprint_file__get_hashes(self, filepath, song_name=None):
-        # print "fingerprint_file"
+    def fingerprint_translation_record_file(self, filepath, song_name=None):
         songname = decoder.path_to_songname(filepath)
         song_hash = decoder.unique_hash(filepath)
         song_name = song_name or songname
 
-        print song_hash
-        song_name, hashes, file_hash = _fingerprint_worker(
-            filepath,
-            self.limit,
-            song_name=song_name
-        )
+        if song_hash in self.songhashes_set:
+            print "%s already fingerprinted, continuing..." % song_name
+        else:
+            song_name, hashes, file_hash = _fingerprint_worker(
+                filepath,
+                self.limit,
+                song_name=song_name
+            )
 
-        # print hashes
+            sid = self.db.insert_song(song_name, file_hash)
 
-        f = open("hash.txt", "w")
+            self.db.insert_repeat_hashes(sid, hashes)
+            self.db.set_song_fingerprinted(sid)
+            self.get_fingerprinted_songs()
+        
+        '''
+        hash_repeat = defaultdict(list)
         for hash, offset in hashes:
-            #hash_repeats[hash].append(offset)
-            f.write("hash: %s , offset: %s" % (hash, offset))
-            for hash_local, offset_local in hashes:
-                if hash == hash_local and offset != offset_local:
-                    print ("Finding overlap hash: %s between offset: %s and offset: %s" % (hash, offset, offset_local))
+            hash_repeat[hash].append(offset)
 
+        hash_repeat_with_min_offset = set()
+
+        for hash, offsets in hash_repeat.iteritems():
+            if len(offsets) > 1:
+                print ("Finding repeat hash %s with %s offsets" % (hash, len(offsets)))
+                print ("Writing to db hash %s and %s offset" % (hash, min(offsets)))
+                print ("-------------------hash_repeat-----------------")
+                hash_repeat_with_min_offset |= set(hash, min(offsets))
+                #hash_repeat_with_min_offset[hash] = min(offsets)
+        
+        for hash, offset in hash_repeat_with_min_offset:
+            print ("Writing to db hash %s and %s offset" % (hash, offset))
+            print ("------------------hash_repeat_with_min_offset------------------")
+        '''
+
+        '''
+        #hash_repeats[hash].append(offset)
+        f.write("hash: %s , offset: %s" % (hash, offset))
+        for hash_local, offset_local in hashes:
+            if hash == hash_local and offset != offset_local:
+                print ("Finding overlap hash: %s between offset: %s and offset: %s" % (hash, offset, offset_local))
+        '''
 
 
     def find_matches(self, samples, Fs=fingerprint.DEFAULT_FS):

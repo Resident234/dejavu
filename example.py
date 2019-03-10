@@ -28,8 +28,8 @@ if __name__ == '__main__':
     song = djv.recognize(FileRecognizer, "records/01 Chasing shadows_fragment.mp3")
     print "#2 From file we recognized: %s\n" % song
 
-    djv.fingerprint_file("records/2019-02-24_20-41-01.mp3")
-    djv.fingerprint_file__get_hashes("records/2019-02-24_20-41-01.mp3")
+    #djv.fingerprint_file("records/2019-02-24_20-41-01.mp3")
+    djv.fingerprint_translation_record_file("records/2019-02-24_20-41-01.mp3")
 
 
     # 0 2 21  0 43 50  1 03 05 -> 1 03 32
@@ -37,11 +37,14 @@ if __name__ == '__main__':
     #song = djv.recognize(FileRecognizer, "mp3/Sean-Fournier--Falling-For-You.mp3")
     #print "From file we recognized: %s\n" % song
 
-    song = djv.recognize(FileRecognizer, "records/2019-02-24_20-41-01.mp3")
-    print "#3 From file we recognized: %s\n" % song
+    #song = djv.recognize(FileRecognizer, "records/2019-02-24_20-41-01.mp3")
+    #print "#3 From file we recognized: %s\n" % song
+    #'offset_seconds': 3784.99193
 
     song = djv.recognize(FileRecognizer, "records/2019-02-24_20-41-01_ad.mp3")
     print "#4 From file we recognized: %s\n" % song
+
+
 
     #song = djv.recognize(FileRecognizer, "records/2019-02-24_00-59-46.mp3")
     #print "From file we recognized: %s\n" % song

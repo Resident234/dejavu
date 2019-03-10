@@ -7,6 +7,8 @@ from MySQLdb.cursors import DictCursor
 
 from dejavu.database import Database
 
+from collections import defaultdict
+
 
 class SQLDatabase(Database):
     """
@@ -302,6 +304,29 @@ class SQLDatabase(Database):
         with self.cursor() as cur:
             for split_values in grouper(values, 1000):
                 cur.executemany(self.INSERT_FINGERPRINT, split_values)
+
+    def insert_repeat_hashes(self, sid, hashes):
+        """
+        Insert repeated series of hash => song_id, offset
+        values into the database.
+        """
+
+        hash_repeat = defaultdict(list)
+        for hash, offset in hashes:
+            hash_repeat[hash].append(offset)
+
+        values = []
+        for hash, offset in hashes:
+            if len(hash_repeat[hash]) > 1:
+                print ("Finding repeat hash %s with %s offsets" % (hash, len(hash_repeat[hash])))
+                print ("Writing to db hash %s and offset %s" % (hash, min(hash_repeat[hash])))
+                values.append((hash, sid, min(hash_repeat[hash])))
+                print ("-------------------hash_repeat-----------------")
+
+        with self.cursor() as cur:
+            for split_values in grouper(values, 1000):
+                cur.executemany(self.INSERT_FINGERPRINT, split_values)
+
 
     def return_matches(self, hashes):
         """

@@ -94,6 +94,61 @@ class Dejavu(object):
         pool.close()
         pool.join()
 
+    def fingerprint_translation_record_directory(self, path, extensions, nprocesses=None):
+        # Try to use the maximum amount of processes if not given.
+        try:
+            nprocesses = nprocesses or multiprocessing.cpu_count()
+        except NotImplementedError:
+            nprocesses = 1
+        else:
+            nprocesses = 1 if nprocesses <= 0 else nprocesses
+
+        pool = multiprocessing.Pool(nprocesses)
+
+        filenames_to_fingerprint = []
+        for filename, _ in decoder.find_files(path, extensions):
+
+            # don't refingerprint already fingerprinted files
+            if decoder.unique_hash(filename) in self.songhashes_set:
+                print "%s already fingerprinted, continuing..." % filename
+                os.remove(filename)
+                continue
+
+            filenames_to_fingerprint.append(filename)
+
+        # Prepare _fingerprint_worker input
+        worker_input = zip(filenames_to_fingerprint,
+                           [self.limit] * len(filenames_to_fingerprint))
+
+        # Send off our tasks
+        iterator = pool.imap_unordered(_fingerprint_worker,
+                                       worker_input)
+
+        # Loop till we have all of them
+        while True:
+            try:
+                song_name, hashes, file_hash = iterator.next()
+            except multiprocessing.TimeoutError:
+                continue
+            except StopIteration:
+                break
+            except:
+                print("Failed fingerprinting")
+                # Print traceback because we can't reraise it here
+                traceback.print_exc(file=sys.stdout)
+            else:
+                sid = self.db.insert_song(song_name, file_hash)
+
+                self.db.insert_repeat_hashes(sid, hashes)
+                self.db.set_song_fingerprinted(sid)
+                self.get_fingerprinted_songs()
+                
+        for filename in filenames_to_fingerprint:
+            os.remove(filename)
+
+        pool.close()
+        pool.join()
+
     def fingerprint_file(self, filepath, song_name=None):
         #print "fingerprint_file"
         songname = decoder.path_to_songname(filepath)
@@ -217,10 +272,10 @@ class Dejavu(object):
             Database.FIELD_FILE_SHA1 : song.get(Database.FIELD_FILE_SHA1, None),}
         return song
 
+
     def recognize(self, recognizer, *options, **kwoptions):
         r = recognizer(self)
         return r.recognize(*options, **kwoptions)
-
 
 def _fingerprint_worker(filename, limit=None, song_name=None):
     # Pool.imap sends arguments as tuples so we have to unpack

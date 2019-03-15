@@ -10,6 +10,10 @@ class BaseRecognizer(object):
     def __init__(self, dejavu):
         self.dejavu = dejavu
         self.Fs = fingerprint.DEFAULT_FS
+        #self.confidence_limit = 2000 # 30s fragments
+        #self.confidence_limit = 280 # 10s fragments 449 284
+        #self.confidence_limit = 80  # 3s fragments
+        self.confidence_limit = 100  # 1s fragments
 
     def _recognize(self, *data):
         matches = []
@@ -39,6 +43,12 @@ class FileRecognizer(BaseRecognizer):
 
     def recognize(self, filename):
         return self.recognize_file(filename)
+
+    def recognize_directory(self, path, extensions):
+        for filename, _ in decoder.find_files(path, extensions):
+            result = self.recognize_file(filename)
+            if result["confidence"] >= self.confidence_limit:
+                print ("From file %s we recognized: %s" % (filename, result))
 
 
 class MicrophoneRecognizer(BaseRecognizer):

@@ -2,6 +2,7 @@ import warnings
 import json
 import logging
 import datetime
+import threading, time
 
 warnings.filterwarnings("ignore")
 
@@ -15,15 +16,20 @@ with open("dejavu.cnf.SAMPLE") as f:
 if __name__ == '__main__':
 
     logging.basicConfig(filename="logs/logs" + datetime.datetime.now().strftime("%Y-%m-%d") + ".log", level=logging.INFO)
+    logging.info("Dejavu")
 
     # create a Dejavu instance
     djv = Dejavu(config)
-
     # Fingerprint all the mp3's in the directory we give it
     #djv.fingerprint_directory("mp3", [".mp3"])
     #djv.fingerprint_directory("AC-DC", [".mp3"])
     #djv.fingerprint_directory("28 scorpions", [".mp3"])
-    djv.fingerprint_translation_record_directory("records", [".mp3"])
+
+    WAIT_TIME_SECONDS = 2 * 60 * 60
+
+    ticker = threading.Event()
+    while not ticker.wait(WAIT_TIME_SECONDS):
+        djv.fingerprint_translation_record_directory("records", [".mp3"])
 
     #djv.fingerprint_file("records/01 Chasing shadows.mp3")
 

@@ -3,7 +3,8 @@ import dejavu.decoder as decoder
 import numpy as np
 import pyaudio
 import time
-
+import logging
+import datetime
 
 class BaseRecognizer(object):
 
@@ -48,7 +49,10 @@ class FileRecognizer(BaseRecognizer):
         for filename, _ in decoder.find_files(path, extensions):
             result = self.recognize_file(filename)
             if result["confidence"] >= self.confidence_limit:
-                print ("From file %s we recognized: %s" % (filename, result))
+                msg = ("From file %s we recognized: %s" % (filename, result))
+                msg = "[" + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "]" + msg
+                print msg
+                logging.info(msg)
 
 
 class MicrophoneRecognizer(BaseRecognizer):

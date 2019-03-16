@@ -1,5 +1,7 @@
 import warnings
 import json
+import logging
+import datetime
 
 warnings.filterwarnings("ignore")
 
@@ -11,6 +13,8 @@ with open("dejavu.cnf.SAMPLE") as f:
     config = json.load(f)
 
 if __name__ == '__main__':
+
+    logging.basicConfig(filename="logs/logs" + datetime.datetime.now().strftime("%Y-%m-%d") + ".log", level=logging.INFO)
 
     # create a Dejavu instance
     djv = Dejavu(config)
@@ -42,15 +46,15 @@ if __name__ == '__main__':
     #print "#3 From file we recognized: %s\n" % song
     #'offset_seconds': 3784.99193
 
-    song = djv.recognize(FileRecognizer, "records/2019-02-24_20-41-01_ad.mp3")
-    print "#4 From file we recognized: %s\n" % song
+    #song = djv.recognize(FileRecognizer, "records/2019-02-24_20-41-01_ad.mp3")
+    #print "#4 From file we recognized: %s\n" % song
 
-    recognizer = FileRecognizer(djv)
+    #recognizer = FileRecognizer(djv)
 
     #recognizer.recognize_directory("records/splitted", [".mp3"])
     #recognizer.recognize_directory("records/splitted_10", [".mp3"])
     #recognizer.recognize_directory("records/splitted_3", [".mp3"])
-    recognizer.recognize_directory("records/splitted_1", [".mp3"])
+    #recognizer.recognize_directory("records/splitted_1", [".mp3"])
 
     #song = djv.recognize(FileRecognizer, "records/2019-02-24_00-59-46.mp3")
     #print "From file we recognized: %s\n" % song

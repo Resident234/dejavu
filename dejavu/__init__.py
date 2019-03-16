@@ -5,8 +5,8 @@ import multiprocessing
 import os
 import traceback
 import sys
-#import pickle
-
+import logging
+import datetime
 
 class Dejavu(object):
 
@@ -59,7 +59,10 @@ class Dejavu(object):
 
             # don't refingerprint already fingerprinted files
             if decoder.unique_hash(filename) in self.songhashes_set:
-                print "%s already fingerprinted, continuing..." % filename
+                msg = "%s already fingerprinted, continuing..." % filename
+                msg = "[" + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "]" + msg
+                print msg
+                logging.info(msg)
                 continue
 
             filenames_to_fingerprint.append(filename)
@@ -81,7 +84,11 @@ class Dejavu(object):
             except StopIteration:
                 break
             except:
-                print("Failed fingerprinting")
+                msg = "Failed fingerprinting"
+                msg = "[" + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "]" + msg
+                print msg
+                logging.info(msg)
+
                 # Print traceback because we can't reraise it here
                 traceback.print_exc(file=sys.stdout)
             else:
@@ -95,6 +102,12 @@ class Dejavu(object):
         pool.join()
 
     def fingerprint_translation_record_directory(self, path, extensions, nprocesses=None):
+        
+        msg = "Starting fingerprint translation record directory"
+        msg = "[" + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "]" + msg
+        print msg
+        logging.info(msg)
+
         # Try to use the maximum amount of processes if not given.
         try:
             nprocesses = nprocesses or multiprocessing.cpu_count()
@@ -110,7 +123,10 @@ class Dejavu(object):
 
             # don't refingerprint already fingerprinted files
             if decoder.unique_hash(filename) in self.songhashes_set:
-                print "%s already fingerprinted, continuing..." % filename
+                msg = "%s already fingerprinted, continuing..." % filename
+                msg = "[" + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "]" + msg
+                print msg
+                logging.info(msg)
                 os.remove(filename)
                 continue
 
@@ -133,7 +149,10 @@ class Dejavu(object):
             except StopIteration:
                 break
             except:
-                print("Failed fingerprinting")
+                msg = "Failed fingerprinting"
+                msg = "[" + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "]" + msg
+                print msg
+                logging.info(msg)
                 # Print traceback because we can't reraise it here
                 traceback.print_exc(file=sys.stdout)
             else:
@@ -158,7 +177,10 @@ class Dejavu(object):
         print song_hash
         # don't refingerprint already fingerprinted files
         if song_hash in self.songhashes_set:
-            print "%s already fingerprinted, continuing..." % song_name
+            msg =  "%s already fingerprinted, continuing..." % song_name
+            msg = "[" + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "]" + msg
+            print msg
+            logging.info(msg)
         else:
             song_name, hashes, file_hash = _fingerprint_worker(
                 filepath,
@@ -179,7 +201,10 @@ class Dejavu(object):
         song_name = song_name or songname
 
         if song_hash in self.songhashes_set:
-            print "%s already fingerprinted, continuing..." % song_name
+            msg = "%s already fingerprinted, continuing..." % song_name
+            msg = "[" + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "]" + msg
+            print msg
+            logging.info(msg)
         else:
             song_name, hashes, file_hash = _fingerprint_worker(
                 filepath,
@@ -192,35 +217,6 @@ class Dejavu(object):
             self.db.insert_repeat_hashes(sid, hashes)
             self.db.set_song_fingerprinted(sid)
             self.get_fingerprinted_songs()
-        
-        '''
-        hash_repeat = defaultdict(list)
-        for hash, offset in hashes:
-            hash_repeat[hash].append(offset)
-
-        hash_repeat_with_min_offset = set()
-
-        for hash, offsets in hash_repeat.iteritems():
-            if len(offsets) > 1:
-                print ("Finding repeat hash %s with %s offsets" % (hash, len(offsets)))
-                print ("Writing to db hash %s and %s offset" % (hash, min(offsets)))
-                print ("-------------------hash_repeat-----------------")
-                hash_repeat_with_min_offset |= set(hash, min(offsets))
-                #hash_repeat_with_min_offset[hash] = min(offsets)
-        
-        for hash, offset in hash_repeat_with_min_offset:
-            print ("Writing to db hash %s and %s offset" % (hash, offset))
-            print ("------------------hash_repeat_with_min_offset------------------")
-        '''
-
-        '''
-        #hash_repeats[hash].append(offset)
-        f.write("hash: %s , offset: %s" % (hash, offset))
-        for hash_local, offset_local in hashes:
-            if hash == hash_local and offset != offset_local:
-                print ("Finding overlap hash: %s between offset: %s and offset: %s" % (hash, offset, offset_local))
-        '''
-
 
     def find_matches(self, samples, Fs=fingerprint.DEFAULT_FS):
         hashes = fingerprint.fingerprint(samples, Fs=Fs)
@@ -293,14 +289,19 @@ def _fingerprint_worker(filename, limit=None, song_name=None):
 
     for channeln, channel in enumerate(channels):
         # TODO: Remove prints or change them into optional logging.
-        print("Fingerprinting channel %d/%d for %s" % (channeln + 1,
+        msg = ("Fingerprinting channel %d/%d for %s" % (channeln + 1,
                                                        channel_amount,
                                                        filename))
-        #print Fs
+        msg = "[" + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "]" + msg
+        print msg
+        logging.info(msg)
+        
         hashes = fingerprint.fingerprint(channel, Fs=Fs)
-        #print hashes
-        print("Finished channel %d/%d for %s" % (channeln + 1, channel_amount,
+        msg = ("Finished channel %d/%d for %s" % (channeln + 1, channel_amount,
                                                  filename))
+        msg = "[" + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "]" + msg
+        print msg
+        logging.info(msg)
 
         #print set(hashes)
         result |= set(hashes)

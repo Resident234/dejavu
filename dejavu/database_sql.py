@@ -1,6 +1,8 @@
 from __future__ import absolute_import
 from itertools import izip_longest
 import Queue
+import datetime
+import logging
 
 import MySQLdb as mysql
 from MySQLdb.cursors import DictCursor
@@ -318,10 +320,21 @@ class SQLDatabase(Database):
         values = []
         for hash, offset in hashes:
             if len(hash_repeat[hash]) > 1:
-                print ("Finding repeat hash %s with %s offsets" % (hash, len(hash_repeat[hash])))
-                print ("Writing to db hash %s and offset %s" % (hash, min(hash_repeat[hash])))
+                msg = ("Finding repeat hash %s with %s offsets" % (hash, len(hash_repeat[hash])))
+                msg = "[" + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "]" + msg
+                print msg
+                logging.info(msg)
+                
+                msg = ("Writing to db hash %s and offset %s" % (hash, min(hash_repeat[hash])))
+                msg = "[" + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "]" + msg
+                print msg
+                logging.info(msg)
+
                 values.append((hash, sid, min(hash_repeat[hash])))
-                print ("-------------------hash_repeat-----------------")
+                msg = "-------------------hash_repeat-----------------"
+                msg = "[" + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "]" + msg
+                print msg
+                logging.info(msg)
 
         with self.cursor() as cur:
             for split_values in grouper(values, 1000):

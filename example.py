@@ -3,6 +3,9 @@ import json
 import logging
 import datetime
 import threading, time
+import vlc
+import os
+import sys
 
 warnings.filterwarnings("ignore")
 
@@ -16,7 +19,30 @@ with open("dejavu.cnf.SAMPLE") as f:
 if __name__ == '__main__':
 
     logging.basicConfig(filename="logs/logs" + datetime.datetime.now().strftime("%Y-%m-%d") + ".log", level=logging.INFO)
-    logging.info("Dejavu")
+
+    filepath = 'https://rt-news.secure.footprint.net/1103.m3u8'
+    movie = os.path.expanduser(filepath)
+    if 'https://' not in filepath:
+        if not os.access(movie, os.R_OK):
+            print ('Error: %s file is not readable' % movie)
+            sys.exit(1)
+
+    while (1):
+        filename_and_command = "--sout=#transcode{vcodec=none,acodec=mp3,ab=320,channels=2,samplerate=44100}:file{dst=records/1103_" + datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + ".mp3}"
+        print filename_and_command
+        #    filename_and_command = "--sout=file/ts:example" + str(clipNumber) + ".mp3"
+        instance = vlc.Instance(filename_and_command)
+        try:
+            media = instance.media_new(movie)
+        except NameError:
+            print ('NameError: % (%s vs Libvlc %s)' % (sys.exc_info()[1],
+                                                       vlc.__version__, vlc.libvlc_get_version()))
+            sys.exit(1)
+        player = instance.media_player_new()
+        player.set_media(media)
+        player.play()
+        time.sleep(15)
+        exit()
 
     # create a Dejavu instance
     djv = Dejavu(config)
@@ -26,6 +52,7 @@ if __name__ == '__main__':
     #djv.fingerprint_directory("28 scorpions", [".mp3"])
 
     WAIT_TIME_SECONDS = 2 * 60 * 60
+    WAIT_TIME_SECONDS = 20
 
     ticker = threading.Event()
     while not ticker.wait(WAIT_TIME_SECONDS):

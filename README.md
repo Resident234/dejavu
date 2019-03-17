@@ -20,6 +20,17 @@ TRUNCATE table songs;
 SET FOREIGN_KEY_CHECKS = 1;
 
 
+recording stream instruction 
+https://www.videolan.org/vlc/download-fedora.html
+https://docs.fedoraproject.org/en-US/quick-docs/installing-and-running-vlc/
+
+vcl -h
+
+source address example : https://rt-news.secure.footprint.net/1103.m3u8
+
+vlc lib for python :
+pip install python-vlc
+yum install pulseaudio
 
 
 

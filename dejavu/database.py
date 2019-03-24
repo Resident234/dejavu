@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 import abc
-
+import dejavu.logger as logger
 
 class Database(object):
     __metaclass__ = abc.ABCMeta

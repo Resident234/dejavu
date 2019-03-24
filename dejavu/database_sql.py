@@ -11,6 +11,7 @@ from dejavu.database import Database
 
 from collections import defaultdict
 
+import dejavu.logger as logger
 
 class SQLDatabase(Database):
     """
@@ -145,6 +146,7 @@ class SQLDatabase(Database):
         super(SQLDatabase, self).__init__()
         self.cursor = cursor_factory(**options)
         self._options = options
+        self.logger = logger.get_logger('dejavu_process_logger')
 
     def after_fork(self):
         # Clear the cursor cache, we don't want any stale connections from
@@ -205,15 +207,6 @@ class SQLDatabase(Database):
             for count, in cur:
                 return count
             return 0
-
-    #def get_fingerprint_hashes(self, sid):
-    #    """
-    #    Returns fingerprints the database has fingerprinted.
-    #    """
-    #    with self.cursor() as cur:
-    #        cur.execute(self.SELECT_ALL_FINGERPRINTS, (sid,))
-    #        for sid, offset, hash in cur:
-    #            yield (sid, offset, hash)
 
     def get_fingerprint_hashes(self):
         """
@@ -321,20 +314,17 @@ class SQLDatabase(Database):
         for hash, offset in hashes:
             if len(hash_repeat[hash]) > 1:
                 msg = ("Finding repeat hash %s with %s offsets" % (hash, len(hash_repeat[hash])))
-                msg = "[" + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "]" + msg
                 print msg
-                logging.info(msg)
+                self.logger.info(msg)
                 
                 msg = ("Writing to db hash %s and offset %s" % (hash, min(hash_repeat[hash])))
-                msg = "[" + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "]" + msg
                 print msg
-                logging.info(msg)
+                self.logger.info(msg)
 
                 values.append((hash, sid, min(hash_repeat[hash])))
                 msg = "-------------------hash_repeat-----------------"
-                msg = "[" + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "]" + msg
                 print msg
-                logging.info(msg)
+                self.logger.info(msg)
 
         with self.cursor() as cur:
             for split_values in grouper(values, 1000):

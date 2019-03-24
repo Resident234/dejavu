@@ -6,57 +6,56 @@ import threading, time
 import vlc
 import os
 import sys
+#import multiprocessing
+from multiprocessing import Process
 
 warnings.filterwarnings("ignore")
 
 from dejavu import Dejavu
 from dejavu.recognize import FileRecognizer, MicrophoneRecognizer
+from dejavu.record_stream import RecordStream
+import dejavu.logger as logger
 
 # load config from a JSON file (or anything outputting a python dictionary)
 with open("dejavu.cnf.SAMPLE") as f:
     config = json.load(f)
 
+dejavu_process_logger = logger.get_logger('dejavu_process_logger')
+record_stream_logger = logger.get_logger('record_stream_logger')
+
+
+def dejavu_process():
+    ticker = threading.Event()
+    while not ticker.wait(60 * 120):
+        dejavu_process_logger.info('TIME LABEL')
+
+        djv.fingerprint_translation_record_directory("records", [".mp3"])
+
+def record_stream_process():
+    ticker = threading.Event()
+    while not ticker.wait(1):
+        record_stream_logger.info('TIME LABEL')
+
+        record_stream.record()
+
 if __name__ == '__main__':
-
-    logging.basicConfig(filename="logs/logs" + datetime.datetime.now().strftime("%Y-%m-%d") + ".log", level=logging.INFO)
-
-    filepath = 'https://rt-news.secure.footprint.net/1103.m3u8'
-    movie = os.path.expanduser(filepath)
-    if 'https://' not in filepath:
-        if not os.access(movie, os.R_OK):
-            print ('Error: %s file is not readable' % movie)
-            sys.exit(1)
-
-    while (1):
-        filename_and_command = "--sout=#transcode{vcodec=none,acodec=mp3,ab=320,channels=2,samplerate=44100}:file{dst=records/1103_" + datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + ".mp3}"
-        print filename_and_command
-        #    filename_and_command = "--sout=file/ts:example" + str(clipNumber) + ".mp3"
-        instance = vlc.Instance(filename_and_command)
-        try:
-            media = instance.media_new(movie)
-        except NameError:
-            print ('NameError: % (%s vs Libvlc %s)' % (sys.exc_info()[1],
-                                                       vlc.__version__, vlc.libvlc_get_version()))
-            sys.exit(1)
-        player = instance.media_player_new()
-        player.set_media(media)
-        player.play()
-        time.sleep(15)
-        exit()
 
     # create a Dejavu instance
     djv = Dejavu(config)
+    record_stream = RecordStream()
     # Fingerprint all the mp3's in the directory we give it
-    #djv.fingerprint_directory("mp3", [".mp3"])
-    #djv.fingerprint_directory("AC-DC", [".mp3"])
-    #djv.fingerprint_directory("28 scorpions", [".mp3"])
+    # djv.fingerprint_directory("mp3", [".mp3"])
+    # djv.fingerprint_directory("AC-DC", [".mp3"])
+    # djv.fingerprint_directory("28 scorpions", [".mp3"])
+    #pool = multiprocessing.Pool(2)
 
-    WAIT_TIME_SECONDS = 2 * 60 * 60
-    WAIT_TIME_SECONDS = 20
+    dejavu_process = Process(target=dejavu_process)
+    dejavu_process.start()
+    record_stream_process = Process(target=record_stream_process)
+    record_stream_process.start()
+    dejavu_process.join()
+    record_stream_process.join()
 
-    ticker = threading.Event()
-    while not ticker.wait(WAIT_TIME_SECONDS):
-        djv.fingerprint_translation_record_directory("records", [".mp3"])
 
     #djv.fingerprint_file("records/01 Chasing shadows.mp3")
 
@@ -93,8 +92,8 @@ if __name__ == '__main__':
     #print "From file we recognized: %s\n" % song
 
     # Or recognize audio from your microphone for `secs` seconds
-    #secs = 5
-    #song = djv.recognize(MicrophoneRecognizer, seconds=secs)
+    secs = 5
+    song = djv.recognize(MicrophoneRecognizer, seconds=secs)
     #if song is None:
     #    print "Nothing recognized -- did you play the song out loud so your mic could hear it? :)"
     #else:

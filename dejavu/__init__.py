@@ -1,5 +1,6 @@
 from dejavu.database import get_database, Database
 import dejavu.decoder as decoder
+import dejavu.record_stream as record_stream
 import fingerprint
 import multiprocessing
 import os
@@ -7,6 +8,7 @@ import traceback
 import sys
 import logging
 import datetime
+import dejavu.logger as logger
 
 class Dejavu(object):
 
@@ -21,7 +23,7 @@ class Dejavu(object):
         super(Dejavu, self).__init__()
 
         self.config = config
-
+        self.logger = logger.get_logger('dejavu_process_logger')
         # initialize db
         db_cls = get_database(config.get("database_type", None))
 
@@ -60,9 +62,8 @@ class Dejavu(object):
             # don't refingerprint already fingerprinted files
             if decoder.unique_hash(filename) in self.songhashes_set:
                 msg = "%s already fingerprinted, continuing..." % filename
-                msg = "[" + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "]" + msg
-                print msg
-                logging.info(msg)
+                print (msg)
+                self.logger.info(msg)
                 continue
 
             filenames_to_fingerprint.append(filename)
@@ -85,9 +86,8 @@ class Dejavu(object):
                 break
             except:
                 msg = "Failed fingerprinting"
-                msg = "[" + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "]" + msg
                 print msg
-                logging.info(msg)
+                self.logger.info(msg)
 
                 # Print traceback because we can't reraise it here
                 traceback.print_exc(file=sys.stdout)
@@ -104,9 +104,8 @@ class Dejavu(object):
     def fingerprint_translation_record_directory(self, path, extensions, nprocesses=None):
         
         msg = "Starting fingerprint translation record directory"
-        msg = "[" + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "]" + msg
         print msg
-        logging.info(msg)
+        self.logger.info(msg)
 
         # Try to use the maximum amount of processes if not given.
         try:
@@ -121,12 +120,14 @@ class Dejavu(object):
         filenames_to_fingerprint = []
         for filename, _ in decoder.find_files(path, extensions):
 
+            basename = os.path.basename(filename)
+            if "_recording" in basename:
+                continue
             # don't refingerprint already fingerprinted files
             if decoder.unique_hash(filename) in self.songhashes_set:
                 msg = "%s already fingerprinted, continuing..." % filename
-                msg = "[" + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "]" + msg
                 print msg
-                logging.info(msg)
+                self.logger.info(msg)
                 os.remove(filename)
                 continue
 
@@ -150,9 +151,8 @@ class Dejavu(object):
                 break
             except:
                 msg = "Failed fingerprinting"
-                msg = "[" + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "]" + msg
                 print msg
-                logging.info(msg)
+                self.logger.info(msg)
                 # Print traceback because we can't reraise it here
                 traceback.print_exc(file=sys.stdout)
             else:
@@ -178,9 +178,8 @@ class Dejavu(object):
         # don't refingerprint already fingerprinted files
         if song_hash in self.songhashes_set:
             msg =  "%s already fingerprinted, continuing..." % song_name
-            msg = "[" + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "]" + msg
             print msg
-            logging.info(msg)
+            self.logger.info(msg)
         else:
             song_name, hashes, file_hash = _fingerprint_worker(
                 filepath,
@@ -202,9 +201,8 @@ class Dejavu(object):
 
         if song_hash in self.songhashes_set:
             msg = "%s already fingerprinted, continuing..." % song_name
-            msg = "[" + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "]" + msg
             print msg
-            logging.info(msg)
+            self.logger.info(msg)
         else:
             song_name, hashes, file_hash = _fingerprint_worker(
                 filepath,
@@ -273,6 +271,10 @@ class Dejavu(object):
         r = recognizer(self)
         return r.recognize(*options, **kwoptions)
 
+    def record_stream(self):
+        record_stream(self)
+
+
 def _fingerprint_worker(filename, limit=None, song_name=None):
     # Pool.imap sends arguments as tuples so we have to unpack
     # them ourself.
@@ -286,22 +288,21 @@ def _fingerprint_worker(filename, limit=None, song_name=None):
     channels, Fs, file_hash = decoder.read(filename, limit)
     result = set()
     channel_amount = len(channels)
+    logger_local = logger.get_logger('dejavu_process_logger')
 
     for channeln, channel in enumerate(channels):
         # TODO: Remove prints or change them into optional logging.
         msg = ("Fingerprinting channel %d/%d for %s" % (channeln + 1,
                                                        channel_amount,
                                                        filename))
-        msg = "[" + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "]" + msg
         print msg
-        logging.info(msg)
+        logger_local.info(msg)
         
         hashes = fingerprint.fingerprint(channel, Fs=Fs)
         msg = ("Finished channel %d/%d for %s" % (channeln + 1, channel_amount,
                                                  filename))
-        msg = "[" + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "]" + msg
         print msg
-        logging.info(msg)
+        logger_local.info(msg)
 
         #print set(hashes)
         result |= set(hashes)

@@ -128,7 +128,7 @@ class Dejavu(object):
                 msg = "%s already fingerprinted, continuing..." % filename
                 print msg
                 self.logger.info(msg)
-                os.remove(filename)
+                #os.remove(filename)
                 continue
 
             filenames_to_fingerprint.append(filename)
@@ -218,6 +218,12 @@ class Dejavu(object):
 
     def find_matches(self, samples, Fs=fingerprint.DEFAULT_FS):
         hashes = fingerprint.fingerprint(samples, Fs=Fs)
+        #custom #1
+        #for hash_local, offset in hashes:
+        #    msg = ("find_matches hash %s, offset %s" % (hash_local, offset))
+        #    msg = "[" + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "]" + msg
+        #    print msg
+        #    logging.info(msg)
         return self.db.return_matches(hashes)
 
     def align_matches(self, matches):

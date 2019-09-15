@@ -37,6 +37,11 @@ class FileRecognizer(BaseRecognizer):
         match = self._recognize(*frames)
         t = time.time() - t
 
+        msg = ("recognize_file match %s" % match)
+        msg = "[" + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "]" + msg
+        print msg
+        logging.info(msg)
+
         if match:
             match['match_time'] = t
 

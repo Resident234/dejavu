@@ -17,7 +17,7 @@ from dejavu.record_stream import RecordStream
 import dejavu.logger as logger
 
 # load config from a JSON file (or anything outputting a python dictionary)
-with open("dejavu.cnf.SAMPLE") as f:
+with open("dejavu.cnf") as f:
     config = json.load(f)
 
 dejavu_process_logger = logger.get_logger('dejavu_process_logger')
@@ -26,41 +26,38 @@ record_stream_logger = logger.get_logger('record_stream_logger')
 
 def dejavu_process():
     ticker = threading.Event()
-    while not ticker.wait(60 * 120):
+    while not ticker.wait(60 * 2):#60 * 120
         dejavu_process_logger.info('TIME LABEL')
-
         djv.fingerprint_translation_record_directory("records", [".mp3"])
 
 def record_stream_process():
     ticker = threading.Event()
     while not ticker.wait(1):
         record_stream_logger.info('TIME LABEL')
-
         record_stream.record()
+
+def recognize_process():
+    ticker = threading.Event()
+    while not ticker.wait(60 * 1):  #
+        print "recognize_process"
+        dejavu_process_logger.info('recognize_process')
+        song = djv.recognize(FileRecognizer, "records/1103_2019-09-14-18-40-43.mp3")
+        print "#1 From file we recognized: %s\n" % song
 
 if __name__ == '__main__':
 
     # create a Dejavu instance
     djv = Dejavu(config)
     record_stream = RecordStream()
-    # Fingerprint all the mp3's in the directory we give it
-    # djv.fingerprint_directory("mp3", [".mp3"])
-    # djv.fingerprint_directory("AC-DC", [".mp3"])
-    # djv.fingerprint_directory("28 scorpions", [".mp3"])
-    #pool = multiprocessing.Pool(2)
-
     dejavu_process = Process(target=dejavu_process)
     dejavu_process.start()
     record_stream_process = Process(target=record_stream_process)
     record_stream_process.start()
+    recognize_process = Process(target=recognize_process)
+    recognize_process.start()
     dejavu_process.join()
     record_stream_process.join()
-
-
-    #djv.fingerprint_file("records/01 Chasing shadows.mp3")
-
-    #song = djv.recognize(FileRecognizer, "records/01 Chasing shadows.mp3")
-    #print "#1 From file we recognized: %s\n" % song
+    recognize_process.join()
 
     #song = djv.recognize(FileRecognizer, "records/01 Chasing shadows_fragment.mp3")
     #print "#2 From file we recognized: %s\n" % song

@@ -17,7 +17,7 @@ class RecordStream(object):#
     def __init__(self):
         super(RecordStream, self).__init__()
         self.logger = logger.get_logger('record_stream_logger')
-        self.interval = 60 * 120
+        self.interval = 60 * 2 #60 * 120
 
     def record(self):
         filepath = 'https://rt-news.secure.footprint.net/1103.m3u8'

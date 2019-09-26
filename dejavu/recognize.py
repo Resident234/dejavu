@@ -18,8 +18,12 @@ class BaseRecognizer(object):
 
     def _recognize(self, *data):
         matches = []
-        for d in data:
-            matches.extend(self.dejavu.find_matches(d, Fs=self.Fs))
+        index = 0
+        for idx, d in enumerate(data):
+            matches.extend(self.dejavu.find_matches(idx, d, Fs=self.Fs))
+        #msg = "matches %s" % matches
+        #print msg
+        #logging.info(msg)
         return self.dejavu.align_matches(matches)
 
     def recognize(self):

@@ -1,4 +1,6 @@
 from __future__ import absolute_import
+
+import pickle
 from itertools import izip_longest
 import Queue
 import datetime
@@ -346,6 +348,9 @@ class SQLDatabase(Database):
 
         with self.cursor() as cur:
             for split_values in grouper(values, 1000):
+                f = open("dict.txt", "w")
+                f.write(str(len(split_values)))
+                f.close()
                 # Create our IN part of the query
                 query = self.SELECT_MULTIPLE
                 query = query % ', '.join(['UNHEX(%s)'] * len(split_values))

@@ -216,14 +216,27 @@ class Dejavu(object):
             self.db.set_song_fingerprinted(sid)
             self.get_fingerprinted_songs()
 
-    def find_matches(self, samples, Fs=fingerprint.DEFAULT_FS):
+    def find_matches(self, index, samples, Fs=fingerprint.DEFAULT_FS):
+        msg = "find_matches self"
+        msg = "[" + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "]" + msg
+        print msg
+        self.logger.info(msg)
+
         hashes = fingerprint.fingerprint(samples, Fs=Fs)
         #custom #1
-        #for hash_local, offset in hashes:
-        #    msg = ("find_matches hash %s, offset %s" % (hash_local, offset))
-        #    msg = "[" + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "]" + msg
-        #    print msg
-        #    logging.info(msg)
+        '''
+        f = open("hashes_samples.log", "a+")
+        for hash_local, offset in hashes:
+            msg = ("%s|%s|%s\r\n" % (index, hash_local, offset))
+            print msg
+            f.write(msg)
+        for hash_local, offset in hashes:
+            msg = ("find_matches hash %s, offset %s" % (hash_local, offset))
+            msg = "[" + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "]" + msg
+            print msg
+            self.logger.info(msg)
+        f.close()
+        '''
         return self.db.return_matches(hashes)
 
     def align_matches(self, matches):

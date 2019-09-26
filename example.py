@@ -38,25 +38,25 @@ def record_stream_process():
 
 def recognize_process():
     ticker = threading.Event()
-    while not ticker.wait(60 * 1):  #
-        print "recognize_process"
-        dejavu_process_logger.info('recognize_process')
-        song = djv.recognize(FileRecognizer, "records/1103_2019-09-14-18-40-43.mp3")
-        print "#1 From file we recognized: %s\n" % song
+    # while not ticker.wait(60 * 1):  #
+    print "recognize_process"
+    dejavu_process_logger.info('recognize_process')
+    song = djv.recognize(FileRecognizer, "records/1103_2019-09-14-18-40-43.mp3")
+    print "#1 From file we recognized: %s\n" % song
 
 if __name__ == '__main__':
 
     # create a Dejavu instance
     djv = Dejavu(config)
-    record_stream = RecordStream()
-    dejavu_process = Process(target=dejavu_process)
-    dejavu_process.start()
-    record_stream_process = Process(target=record_stream_process)
-    record_stream_process.start()
+    #record_stream = RecordStream()
+    #dejavu_process = Process(target=dejavu_process)
+    #dejavu_process.start()
+    #record_stream_process = Process(target=record_stream_process)
+    #record_stream_process.start()
     recognize_process = Process(target=recognize_process)
     recognize_process.start()
-    dejavu_process.join()
-    record_stream_process.join()
+    #dejavu_process.join()
+    #record_stream_process.join()
     recognize_process.join()
 
     #song = djv.recognize(FileRecognizer, "records/01 Chasing shadows_fragment.mp3")

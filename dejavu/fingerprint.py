@@ -6,6 +6,7 @@ from scipy.ndimage.morphology import (generate_binary_structure,
                                       iterate_structure, binary_erosion)
 import hashlib
 from operator import itemgetter
+import dejavu.logger as logger
 
 IDX_FREQ_I = 0
 IDX_TIME_J = 1
@@ -61,6 +62,8 @@ PEAK_SORT = True
 # potentially higher collisions and misclassifications when identifying songs.
 FINGERPRINT_REDUCTION = 20
 
+fingerprint_logger = logger.get_logger('fingerprint_logger')
+
 def fingerprint(channel_samples, Fs=DEFAULT_FS,
                 wsize=DEFAULT_WINDOW_SIZE,
                 wratio=DEFAULT_OVERLAP_RATIO,
@@ -85,8 +88,22 @@ def fingerprint(channel_samples, Fs=DEFAULT_FS,
     # find local maxima
     local_maxima = get_2D_peaks(arr2D, plot=False, amp_min=amp_min)
 
-    # return hashes
-    return generate_hashes(local_maxima, fan_value=fan_value)
+    file_log = open("local_maxima.log", "r")
+    local_maxima_lines = file_log.readlines()
+    for local_maxima_str in local_maxima_lines:
+        local_maxima_str = local_maxima_str.replace("[", "")
+        local_maxima_str = local_maxima_str.replace("]", "")
+        local_maxima_items = local_maxima_str.rstrip().split(', ')
+        fingerprint_logger.info(local_maxima_items)
+
+    hashes = generate_hashes(local_maxima, fan_value=fan_value)
+
+    values = []
+    for hash, offset in hashes:
+        values.append((hash, offset))
+
+    fingerprint_logger.info(values)
+    return hashes
 
 
 def get_2D_peaks(arr2D, plot=False, amp_min=DEFAULT_AMP_MIN):
@@ -136,6 +153,7 @@ def generate_hashes(peaks, fan_value=DEFAULT_FAN_VALUE):
        sha1_hash[0:20]    time_offset
     [(e05b341a9b77a51fd26, 32), ... ]
     """
+
     if PEAK_SORT:
         peaks.sort(key=itemgetter(1))
 
